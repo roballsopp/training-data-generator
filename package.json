@@ -1,0 +1,18 @@
+{
+  "name": "midi-io",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "rca06d",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.4.7",
+    "glob": "^7.1.1",
+    "lodash": "^4.17.4",
+    "midi-file": "^1.0.2",
+    "node-wav": "0.0.2"
+  }
+}
