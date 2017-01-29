@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const commander = require('commander');
 const glob = require('glob');
 const fs = require('fs');
