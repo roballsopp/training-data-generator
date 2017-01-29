@@ -5,8 +5,8 @@ module.exports = {
 };
 
 function toFile(filepath, audioData, exampleMarkers, exampleLength) {
-	const XFilePath = `${filepath}/X.dat`;
-	const yFilePath = `${filepath}/y.dat`;
+	const XFilePath = `${filepath}_X.dat`;
+	const yFilePath = `${filepath}_y.dat`;
 
 	console.info(`Writing ${exampleMarkers.length} markers to ${yFilePath}`);
 	console.info(`Writing training examples of sample length ${exampleLength} to ${XFilePath}`);
