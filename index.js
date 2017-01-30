@@ -33,7 +33,9 @@ console.info(`Output info - Length: ${sampleLengthOut} (${millisecondsOut} ms), 
 glob(audioPath, function (err, files) {
 	if (err) return errAndExit(err);
 
-	files.forEach(p => createTrainingData(p, markerPath));
+	files.reduce((prevOp, filepath) => {
+		return prevOp.then(() => createTrainingData(filepath, markerPath));
+	}, Promise.resolve());
 });
 
 function createTrainingData(audioFilePath, markerFilePath) {
