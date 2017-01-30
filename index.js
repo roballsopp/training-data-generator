@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 const commander = require('commander');
 const glob = require('glob');
 const fs = require('fs');
@@ -24,8 +25,8 @@ const sampleRateOut = commander.sampleRate;
 const millisecondsOut = commander.exampleLength;
 const sampleLengthOut = Math.round(sampleRateOut * (millisecondsOut / 1000));
 const minNegativeExampleBuffer = commander.exampleBuffer;
-const audioPath = process.cwd() + commander.audio;
-const markerPath = process.cwd() + commander.markers;
+const audioPath = path.join(process.cwd(), commander.audio);
+const markerPath = path.join(process.cwd(), commander.markers);
 
 console.info(`Output info - Length: ${sampleLengthOut} (${millisecondsOut} ms), Sample Rate: ${sampleRateOut}`);
 
@@ -41,8 +42,8 @@ function createTrainingData(audioFilePath, markerFilePath) {
 
 	const audioDir = path.dirname(audioFilePath);
 
-	let midiMapFilePath = audioDir + '/map.js';
-	if (!fs.existsSync(midiMapFilePath)) midiMapFilePath = `${__dirname}/markers/default-midi-map.js`;
+	let midiMapFilePath = path.join(audioDir, 'map.js');
+	if (!fs.existsSync(midiMapFilePath)) midiMapFilePath = path.join(__dirname, 'markers/default-midi-map.js');
 
 	console.info(`Reading wav from ${audioFilePath}...`);
 
@@ -63,7 +64,7 @@ function createTrainingData(audioFilePath, markerFilePath) {
 
 					const audioData = wavFile.channelData[0];
 
-					const outputPath = audioDir + '/' + path.basename(audioFilePath);
+					const outputPath = path.join(audioDir, path.basename(audioFilePath));
 					return TrainingExWriter.toFile(outputPath, audioData, allMarkers, sampleLengthOut);
 				})
 				.catch(err => console.error("ERROR", err));
