@@ -68,6 +68,56 @@ describe('Markers', function () {
 			});
 		});
 	});
+
+	describe('generateNegativeMarkers', function () {
+		beforeAll(function (done) {
+			this.expectedMinDistanceFromPositiveMarkers = 50;
+			Markers
+				.fromFile(testMarkersPath)
+				.then(positiveMarkers => {
+					this.expectedPositiveMarkers = positiveMarkers;
+					return Markers.generateNegativeMarkers(positiveMarkers, this.expectedMinDistanceFromPositiveMarkers);
+				})
+				.then(negativeMarkers => {
+					this.actualNegativeMarkers = negativeMarkers;
+				})
+				.then(done)
+				.catch(done.fail);
+		});
+
+		it('generates one negative marker between all positive marker pairs', function () {
+			for (let i = 0, l = this.expectedPositiveMarkers.length - 1; i < l; i++) {
+				const currentPositiveMarker = this.expectedPositiveMarkers[i];
+				const nextPositiveMarker = this.expectedPositiveMarkers[i+1];
+				const currentPositiveMarkerPaddedPos = currentPositiveMarker.pos + this.expectedMinDistanceFromPositiveMarkers;
+				const nextPositiveMarkerPaddedPos = nextPositiveMarker.pos + this.expectedMinDistanceFromPositiveMarkers;
+
+				const negativeMarker = this.actualNegativeMarkers[i];
+
+				expect(negativeMarker.pos).not.toBeLessThan(currentPositiveMarkerPaddedPos);
+				expect(negativeMarker.pos).not.toBeGreaterThan(nextPositiveMarkerPaddedPos);
+			}
+		});
+
+		it('sets all labels to 0 for each negative marker', function () {
+			const expectedLabels = new Uint8Array(NUM_ARTICULATIONS);
+
+			// almost certainly unnecessary, but i want to be dead sure they are 0
+			expectedLabels.forEach((label, i) => {
+				expectedLabels[i] = 0;
+			});
+
+			this.actualNegativeMarkers.forEach(negativeMarker => {
+				expect(negativeMarker.y).toEqual(expectedLabels);
+			});
+		});
+
+		it('sets pos to a whole number', function () {
+			this.actualNegativeMarkers.forEach(negativeMarker => {
+				expect(negativeMarker.pos % 1).toBe(0);
+			});
+		});
+	});
 });
 
 function toOneHot(labels) {

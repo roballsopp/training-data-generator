@@ -81,5 +81,5 @@ function createRandomBetween(firstMarker, secondMarker, minDistanceFromMarkers =
 	const distanceBetweenMarkers = secondMarker.pos - firstMarker.pos - (minDistanceFromMarkers * 2);
 	const pos = distanceBetweenMarkers > 0 ? (Math.random() * distanceBetweenMarkers) + firstMarker.pos : null;
 
-	return pos && { pos, y: new Uint8Array(NUM_ARTICULATIONS) };
+	return pos && { pos: Math.round(pos), y: new Uint8Array(NUM_ARTICULATIONS) };
 }
