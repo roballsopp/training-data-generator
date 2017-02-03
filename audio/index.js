@@ -1,5 +1,4 @@
 const fs = require('fs');
-const numeric = require('numeric');
 const Promise = require('bluebird');
 const nodeWav = require('node-wav');
 const fsReadFile = Promise.promisify(fs.readFile);
