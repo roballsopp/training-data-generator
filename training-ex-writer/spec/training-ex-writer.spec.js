@@ -36,7 +36,8 @@ describe('Training Example Writer', function () {
 				.then(([markers, audioData]) => {
 					this.markers = markers;
 					this.audioData = audioData;
-					return TrainingExWriter.toFile(this.expectedOutputPath, audioData, markers, this.expectedExampleLength);
+					const writer = new TrainingExWriter(audioData, markers);
+					return writer.toFile(this.expectedOutputPath, this.expectedExampleLength);
 				})
 				.then(done)
 				.catch(done.fail);
