@@ -1,9 +1,20 @@
 const fs = require('fs');
 
+function defaultTransformer(audioData) {
+	return audioData;
+}
+
 class TrainingExWriter {
 	constructor(audioData, exampleMarkers) {
 		this._audioData = audioData;
 		this._exampleMarkers = exampleMarkers;
+		this._transformers = [defaultTransformer];
+	}
+
+	transform(transformer) {
+		if (typeof transformer !== 'function') throw new Error('Transformer must be a function');
+		this._transformers.push(transformer);
+		return this;
 	}
 
 	toFile(outputPath, exampleLength) {
@@ -16,12 +27,16 @@ class TrainingExWriter {
 		const fdX = fs.openSync(XFilePath, 'w');
 		const fdy = fs.openSync(yFilePath, 'w');
 
-		this._exampleMarkers.forEach(marker => {
-			const X = Buffer.from(this._audioData.slice(marker.pos, marker.pos + exampleLength).buffer);
-			const y = Buffer.from(marker.y.buffer);
+		this._transformers.forEach(transformer => {
+			const transformedAudioData = transformer(this._audioData);
 
-			fs.writeSync(fdX, X, 0, X.byteLength);
-			fs.writeSync(fdy, y, 0, y.byteLength);
+			this._exampleMarkers.forEach(marker => {
+				const X = Buffer.from(transformedAudioData.slice(marker.pos, marker.pos + exampleLength).buffer);
+				const y = Buffer.from(marker.y.buffer);
+
+				fs.writeSync(fdX, X, 0, X.byteLength);
+				fs.writeSync(fdy, y, 0, y.byteLength);
+			});
 		});
 
 		fs.closeSync(fdX);

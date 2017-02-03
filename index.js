@@ -51,14 +51,11 @@ function createTrainingData(audioFilePath, markerFilePath) {
 					const audioData = wavFile.channelData[0];
 					const outputPath = path.join(audioDir, path.basename(audioFilePath));
 
-					const writer = new TrainingExWriter( audioData, allMarkers);
+					const writer = new TrainingExWriter(audioData, allMarkers);
 
-					writer.toFile(outputPath, sampleLengthOut);
-
-					// const audioDataInv = Audio.reversePolarity(audioData);
-					// const outputPathInv = outputPath + '_inv';
-					//
-					// TrainingExWriter.toFile(outputPathInv, audioDataInv, allMarkers, sampleLengthOut);
+					writer
+						.transform(Audio.reversePolarity)
+						.toFile(outputPath, sampleLengthOut);
 				});
 		})
 		.catch(err => console.error("ERROR", err));
