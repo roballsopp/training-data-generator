@@ -11,6 +11,15 @@ module.exports = {
 };
 
 function fromFile(markerPath, mapPath, sampleRate = 44100) {
+	if (!fs.existsSync(markerPath)) return Promise.reject(`Cannot find marker file at ${markerPath}`);
+	if (!fs.existsSync(mapPath)) {
+		console.warn(`No midi map found at ${mapPath}. Using default midi map`);
+		mapPath = './default-midi-map.js';
+	}
+
+	console.info(`Loading markers from ${markerPath}...`);
+	console.info(`Using midi map at ${mapPath}`);
+
 	const midiMap = require(mapPath)(ARTICULATIONS);
 
 	return fsReadFile(markerPath)
@@ -38,17 +47,21 @@ function fromFile(markerPath, mapPath, sampleRate = 44100) {
 				}
 			}
 
-			return _(markers)
+			const markerArray = _(markers)
 				.transform((markersArray, y, pos) => {
 					markersArray.push({ pos: parseInt(pos), y });
 					return markersArray;
 				}, [])
 				.sortBy('pos')
 				.value();
+
+			console.info(`${markerArray.length} markers loaded.`);
+			return markerArray;
 		});
 }
 
 function generateNegativeMarkers(positiveMarkers, minDistanceFromPositiveMarkers = 0) {
+	console.info(`Generating negative markers...`);
 	const negativeMarkers = [];
 
 	positiveMarkers.forEach((curentPositiveMarker, i) => {
@@ -60,6 +73,7 @@ function generateNegativeMarkers(positiveMarkers, minDistanceFromPositiveMarkers
 		}
 	});
 
+	console.info(`${negativeMarkers.length} negative markers generated`);
 	return negativeMarkers;
 }
 

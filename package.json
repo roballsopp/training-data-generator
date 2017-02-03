@@ -18,5 +18,8 @@
     "lodash": "^4.17.4",
     "midi-file": "^1.0.2",
     "node-wav": "0.0.2"
+  },
+  "devDependencies": {
+    "jasmine": "^2.5.3"
   }
 }
