@@ -4,7 +4,7 @@ const { NUM_ARTICULATIONS } = require('../midi-map.config');
 const expectedMarkersDefault = require('./expected-markers-default');
 const expectedMarkersTest = require('./expected-markers-test');
 
-const testMarkersPath = path.join(__dirname, './markers.mid');
+const testMarkersPath = path.join(__dirname, '../../spec/markers.mid');
 const testMapPath = path.join(__dirname, './test-midi-map.js');
 
 describe('Markers', function () {
