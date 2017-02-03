@@ -19,7 +19,7 @@ describe('Markers', function () {
 		describe('when using the default midi map', function () {
 			beforeAll(function (done) {
 				Markers
-					.fromFile(testMarkersPath)
+					.fromFile(testMarkersPath, null, 44100)
 					.then(markers => {
 						this.actualMarkers = markers;
 					})
@@ -45,7 +45,7 @@ describe('Markers', function () {
 		describe('when using a custom midi map', function () {
 			beforeAll(function (done) {
 				Markers
-					.fromFile(testMarkersPath, testMapPath)
+					.fromFile(testMarkersPath, testMapPath, 44100)
 					.then(markers => {
 						this.actualMarkers = markers;
 					})
