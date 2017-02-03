@@ -5,11 +5,10 @@ const glob = require('glob');
 const fs = require('fs');
 const path = require('path');
 const Promise = require('bluebird');
-const nodeWav = require('node-wav');
-const fsReadFile = Promise.promisify(fs.readFile);
 
 const config = require('./default.config');
 const Markers = require('./markers');
+const Audio = require('./audio');
 const TrainingExWriter = require('./training-ex-writer');
 
 commander
@@ -39,38 +38,28 @@ glob(audioPath, function (err, files) {
 });
 
 function createTrainingData(audioFilePath, markerFilePath) {
-	if (!fs.existsSync(audioFilePath)) return errAndExit(`Cannot find audio file at ${audioFilePath}`);
-	if (!fs.existsSync(markerFilePath)) return errAndExit(`Cannot find marker file at ${markerFilePath}`);
-
-	const audioDir = path.dirname(audioFilePath);
-
-	let midiMapFilePath = path.join(audioDir, 'map.js');
-	if (!fs.existsSync(midiMapFilePath)) midiMapFilePath = path.join(__dirname, 'markers/default-midi-map.js');
-
-	console.info(`Reading wav from ${audioFilePath}...`);
-
-	return fsReadFile(audioFilePath)
-		.then(nodeWav.decode)
+	return Audio
+		.load(audioFilePath)
 		.then(wavFile => {
-			console.info(`Loading markers from ${markerFilePath}...`);
-			console.info(`Using midi map at ${midiMapFilePath}`);
+			const audioDir = path.dirname(audioFilePath);
+			const midiMapFilePath = path.join(audioDir, 'map.js');
 			return Markers.fromFile(markerFilePath, midiMapFilePath, wavFile.sampleRate)
 				.then(positiveMarkers => {
-					console.info(`${positiveMarkers.length} positive markers loaded.`);
-
-					console.info(`Generative negative markers...`);
 					const negativeMarkers = Markers.generateNegativeMarkers(positiveMarkers, minNegativeExampleBuffer);
-					console.info(`${negativeMarkers.length} negative markers generated`);
-
 					const allMarkers = positiveMarkers.concat(negativeMarkers);
 
 					const audioData = wavFile.channelData[0];
-
 					const outputPath = path.join(audioDir, path.basename(audioFilePath));
-					return TrainingExWriter.toFile(outputPath, audioData, allMarkers, sampleLengthOut);
-				})
-				.catch(err => console.error("ERROR", err));
-		});
+
+					TrainingExWriter.toFile(outputPath, audioData, allMarkers, sampleLengthOut);
+
+					const audioDataInv = Audio.reversePolarity(audioData);
+					const outputPathInv = outputPath + '_inv';
+
+					TrainingExWriter.toFile(outputPathInv, audioDataInv, allMarkers, sampleLengthOut);
+				});
+		})
+		.catch(err => console.error("ERROR", err));
 }
 
 function errAndExit(err) {
