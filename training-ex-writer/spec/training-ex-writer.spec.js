@@ -3,6 +3,7 @@ const fs = require('fs');
 const Promise = require('bluebird');
 const nodeWav = require('node-wav');
 const fsReadFile = Promise.promisify(fs.readFile);
+const Audio = require('../../audio');
 const Markers = require('../../markers');
 const { NUM_ARTICULATIONS } = require('../../markers/midi-map.config');
 const TrainingExWriter = require('../index');
@@ -17,6 +18,7 @@ describe('Training Example Writer', function () {
 			this.expectedExampleFilePath = this.expectedOutputPath + '_X.dat';
 			this.expectedLabelFilePath = this.expectedOutputPath + '_y.dat';
 			this.expectedExampleLength = 4000;
+			this.expectedTransformers = [a => a, Audio.reversePolarity];
 
 			const outputDir = path.dirname(this.expectedOutputPath);
 
@@ -37,7 +39,9 @@ describe('Training Example Writer', function () {
 					this.markers = markers;
 					this.audioData = audioData;
 					const writer = new TrainingExWriter(audioData, markers);
-					return writer.toFile(this.expectedOutputPath, this.expectedExampleLength);
+					return writer
+						.transform(Audio.reversePolarity)
+						.toFile(this.expectedOutputPath, this.expectedExampleLength);
 				})
 				.then(done)
 				.catch(done.fail);
@@ -54,19 +58,30 @@ describe('Training Example Writer', function () {
 		it(`writes raw example data correctly`, function () {
 			const exampleData = readFileAsFloat32Array(this.expectedExampleFilePath);
 
-			this.markers.forEach((marker, i) => {
-				const expectedAudio = this.audioData.slice(marker.pos, marker.pos + this.expectedExampleLength);
-				const actualAudio = exampleData.slice(i * this.expectedExampleLength, (i + 1) * this.expectedExampleLength);
-				expect(actualAudio).toEqual(expectedAudio);
+			this.expectedTransformers.forEach((transformer, t) => {
+				const transformedAudio = transformer(this.audioData);
+				const transformerOffset = t * this.markers.length * this.expectedExampleLength;
+				this.markers.forEach((marker, i) => {
+					const expectedAudio = transformedAudio.slice(marker.pos, marker.pos + this.expectedExampleLength);
+					const start = transformerOffset + (i * this.expectedExampleLength);
+					const end = start + this.expectedExampleLength;
+					const actualAudio = exampleData.slice(start, end);
+					expect(actualAudio).toEqual(expectedAudio);
+				});
 			});
 		});
 
 		it('writes label data correctly', function () {
 			const labelData = new Uint8Array(fs.readFileSync(this.expectedLabelFilePath));
 
-			this.markers.forEach(({ y: expectedLabels }, i) => {
-				const actualLabels = labelData.slice(i * NUM_ARTICULATIONS, (i + 1) * NUM_ARTICULATIONS);
-				expect(actualLabels).toEqual(expectedLabels);
+			this.expectedTransformers.forEach((transformer, t) => {
+				const transformerOffset = t * this.markers.length * NUM_ARTICULATIONS;
+				this.markers.forEach(({ y: expectedLabels }, i) => {
+					const start = transformerOffset + (i * NUM_ARTICULATIONS);
+					const end = start + NUM_ARTICULATIONS;
+					const actualLabels = labelData.slice(start, end);
+					expect(actualLabels).toEqual(expectedLabels);
+				});
 			});
 		});
 	});
