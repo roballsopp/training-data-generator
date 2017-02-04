@@ -1,14 +1,10 @@
 const fs = require('fs');
 
-function defaultTransformer(audioData) {
-	return audioData;
-}
-
 class TrainingExWriter {
 	constructor(audioData, exampleMarkers) {
 		this._audioData = audioData;
 		this._exampleMarkers = exampleMarkers;
-		this._transformers = [defaultTransformer];
+		this._transformers = [a => a];
 	}
 
 	transform(transformer) {
