@@ -6,12 +6,28 @@ const expectedMarkersTest = require('./expected-markers-test');
 
 const testMarkersPath = path.join(__dirname, '../../spec/markers.mid');
 const testMapPath = path.join(__dirname, './test-midi-map.js');
+const invalidLengthMap = path.join(__dirname, './invalid-length-midi-map.js');
+const invalidTypeMap = path.join(__dirname, './invalid-type-midi-map.js');
 
 describe('Markers', function () {
 	describe('fromFile', function () {
 		it('fails when the file is not found', function (done) {
 			Markers
 				.fromFile('./not-a-file.file')
+				.then(() => done.fail('Expected a failure, but operation succeeded.'))
+				.catch(done);
+		});
+
+		it('fails when the midi map has an invalid length', function (done) {
+			Markers
+				.fromFile(testMarkersPath, invalidLengthMap, 44100)
+				.then(() => done.fail('Expected a failure, but operation succeeded.'))
+				.catch(done);
+		});
+
+		it('fails when the midi map has an invalid type', function (done) {
+			Markers
+				.fromFile(testMarkersPath, invalidTypeMap, 44100)
 				.then(() => done.fail('Expected a failure, but operation succeeded.'))
 				.catch(done);
 		});

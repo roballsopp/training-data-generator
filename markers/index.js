@@ -22,6 +22,9 @@ function fromFile(markerPath, mapPath, sampleRate = 44100) {
 
 	const midiMap = require(mapPath)(ARTICULATIONS);
 
+	if (!Array.isArray(midiMap)) return Promise.reject(`Invalid midi map. Expected array, got ${typeof midiMap}`);
+	if (midiMap.length !== 128) return Promise.reject(`Invalid midi map. Expected length 128. Got length ${midiMap.length}`);
+
 	return fsReadFile(markerPath)
 		.then(parseMidi)
 		.then(midiFile => {
