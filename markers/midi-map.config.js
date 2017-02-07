@@ -29,4 +29,6 @@ module.exports.ARTICULATIONS = SUPPORTED_ARTICULATIONS.reduce((map, name, i) => 
 	return map;
 }, {});
 
+module.exports.ARTICULATIONS.NO_HIT = -1;
+
 module.exports.NUM_ARTICULATIONS = SUPPORTED_ARTICULATIONS.length;

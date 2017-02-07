@@ -46,7 +46,7 @@ function fromFile(markerPath, mapPath, sampleRate = 44100) {
 					const markerPosition = Math.round(elapsedSamples);
 					markers[markerPosition] = markers[markerPosition] || new Uint8Array(NUM_ARTICULATIONS);
 					const mappedNote = midiMap[evt.noteNumber]; // map 128 possible midi notes into NUM_ARTICULATIONS
-					markers[markerPosition][mappedNote] = 1;
+					if (mappedNote !== ARTICULATIONS.NO_HIT) markers[markerPosition][mappedNote] = 1;
 				}
 			}
 
