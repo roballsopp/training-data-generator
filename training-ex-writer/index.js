@@ -43,6 +43,9 @@ class TrainingExWriter {
 
 				if (start < 0) return;
 
+				// data in transformedAudioData is stored in whatever byte order the machine natively uses
+				// this whole file format counts on little endian, which this machine happens to be, but
+				// this will break the format on a BE machine
 				const X = Buffer.from(transformedAudioData.buffer, start, length);
 				const y = Buffer.from(marker.y.buffer);
 
