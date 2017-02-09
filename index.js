@@ -15,6 +15,7 @@ commander
 	.version('0.0.1')
 	.option('-a, --audio [string]', 'Specify the path or glob to the audio file(s)', '/**/*.wav')
 	.option('-m, --markers [string]', 'Specify the path to the marker midi file', '/markers.mid')
+	.option('-o, --offset [number]', 'Specify the offset used from each marker to save the actual example data', 0)
 	.option('-r, --sample-rate [number]', 'Specify the sample rate of the training examples', config.sampleRateOut)
 	.option('-l, --example-length [number]', 'Specify the length (ms) of each training example', config.trainingExampleLength)
 	.option('-b, --example-buffer [number]', 'Specify the distance (in samples) a negative training example must be from all positive examples', config.minNegativeExampleBuffer)
@@ -23,6 +24,7 @@ commander
 const sampleRateOut = commander.sampleRate;
 const millisecondsOut = commander.exampleLength;
 const sampleLengthOut = Math.round(sampleRateOut * (millisecondsOut / 1000));
+const markerOffset = -parseInt(commander.offset);
 const minNegativeExampleBuffer = commander.exampleBuffer;
 const audioPath = path.join(process.cwd(), commander.audio);
 const markerPath = path.join(process.cwd(), commander.markers);
@@ -55,7 +57,7 @@ function createTrainingData(audioFilePath, markerFilePath) {
 
 					writer
 						.transform(Audio.reversePolarity)
-						.toFile(outputPath, sampleLengthOut);
+						.toFile(outputPath, sampleLengthOut, markerOffset);
 				});
 		})
 		.catch(err => console.error("ERROR", err));
