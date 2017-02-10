@@ -15,24 +15,18 @@ class TrainingExWriter {
 		return this;
 	}
 
-	toFile(outputPath, exampleLength, markerOffset = 0) {
-		const XFilePath = `${outputPath}_X.dat`;
+	toFile(outputPathName, exampleLength, markerOffset = 0) {
+		const outputFilePath = `${outputPathName}.ndat`;
 		const numExamplesToBeWritten = this._exampleMarkers.length * this._transformers.length;
 
-		console.info(`Writing ${numExamplesToBeWritten} training examples of sample length ${exampleLength}, with marker offset ${markerOffset} to ${XFilePath}`);
+		console.info(`Writing ${numExamplesToBeWritten} training examples of sample length ${exampleLength}, with marker offset ${markerOffset} to ${outputFilePath}`);
 
-		const fd = fs.openSync(XFilePath, 'w');
+		const fd = fs.openSync(outputFilePath, 'w');
 
-		const header = new TrainingDataHeader({
-			numFeatures: exampleLength,
-			numLabels: NUM_ARTICULATIONS,
-			numExamples: numExamplesToBeWritten,
-			labelOffset: markerOffset
-		});
+		// write blank buffer to move file write position
+		fs.writeSync(fd, Buffer.alloc(TrainingDataHeader.HEADER_SIZE), 0, TrainingDataHeader.HEADER_SIZE);
 
-		const headerBuf = header.toBuffer();
-
-		fs.writeSync(fd, headerBuf, 0, headerBuf.byteLength);
+		let numExamplesWritten = numExamplesToBeWritten;
 
 		this._transformers.forEach(transformer => {
 			const transformedAudioData = transformer(this._audioData);
@@ -41,7 +35,7 @@ class TrainingExWriter {
 				const start = (markerOffset + marker.pos) * transformedAudioData.BYTES_PER_ELEMENT;
 				const length = exampleLength * transformedAudioData.BYTES_PER_ELEMENT;
 
-				if (start < 0) return;
+				if (start < 0) return numExamplesWritten--;
 
 				// data in transformedAudioData is stored in whatever byte order the machine natively uses
 				// this whole file format counts on little endian, which this machine happens to be, but
@@ -54,9 +48,21 @@ class TrainingExWriter {
 			});
 		});
 
+		const header = new TrainingDataHeader({
+			numFeatures: exampleLength,
+			numLabels: NUM_ARTICULATIONS,
+			numExamples: numExamplesWritten,
+			labelOffset: markerOffset
+		});
+
+		const headerBuf = header.toBuffer();
+
+		fs.writeSync(fd, headerBuf, 0, headerBuf.byteLength, 0);
+
 		fs.closeSync(fd);
 
 		console.info('Write completed successfully!');
+		console.info(`${numExamplesToBeWritten - numExamplesWritten} examples dropped due to negative offset`);
 	}
 }
 

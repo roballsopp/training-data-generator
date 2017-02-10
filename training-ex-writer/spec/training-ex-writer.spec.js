@@ -16,7 +16,7 @@ describe('Training Example Writer', function () {
 	describe('toFile', function () {
 		beforeAll(function (done) {
 			this.expectedOutputPath = path.join(__dirname, '../../tmp/test');
-			this.expectedExampleFilePath = this.expectedOutputPath + '_X.dat';
+			this.expectedExampleFilePath = this.expectedOutputPath + '.ndat';
 			this.expectedExampleLength = 4000;
 			this.expectedTransformers = [a => a, Audio.reversePolarity];
 
