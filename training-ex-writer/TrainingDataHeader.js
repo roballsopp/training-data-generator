@@ -14,7 +14,7 @@ class TrainingDataHeader {
 		buffer.writeUInt32LE(this.numFeatures, 4);
 		buffer.writeUInt32LE(this.numLabels, 8);
 		buffer.writeUInt32LE(this.numExamples, 12);
-		buffer.writeUInt32LE(this.labelOffset, 16);
+		buffer.writeInt32LE(this.labelOffset, 16);
 		return buffer;
 	}
 
@@ -33,7 +33,7 @@ class TrainingDataHeader {
 			numFeatures: buffer.readUInt32LE(4),
 			numLabels: buffer.readUInt32LE(8),
 			numExamples: buffer.readUInt32LE(12),
-			labelOffset: buffer.readUInt32LE(16)
+			labelOffset: buffer.readInt32LE(16)
 		});
 	}
 }
