@@ -15,7 +15,8 @@ commander
 	.version('0.0.1')
 	.option('-a, --audio [string]', 'Specify the path or glob to the audio file(s)', '/**/*.wav')
 	.option('-m, --markers [string]', 'Specify the path to the marker midi file', '/markers.mid')
-	.option('-o, --offset [number]', 'Specify the offset used from each marker to save the actual example data', 0)
+	.option('-o, --output-dir [string]', 'Specify the output directory for the data files')
+	.option('-s, --offset [number]', 'Specify the offset used from each marker to save the actual example data', 0)
 	.option('-r, --sample-rate [number]', 'Specify the sample rate of the training examples', config.sampleRateOut)
 	.option('-l, --example-length [number]', 'Specify the length (ms) of each training example', config.trainingExampleLength)
 	.option('-b, --example-buffer [number]', 'Specify the distance (in samples) a negative training example must be from all positive examples', config.minNegativeExampleBuffer)
@@ -28,6 +29,7 @@ const markerOffset = -parseInt(commander.offset);
 const minNegativeExampleBuffer = commander.exampleBuffer;
 const audioPath = path.join(process.cwd(), commander.audio);
 const markerPath = path.join(process.cwd(), commander.markers);
+const outputDir = commander.outputDir;
 
 console.info(`Output info - Length: ${sampleLengthOut} (${millisecondsOut} ms), Sample Rate: ${sampleRateOut}`);
 
@@ -51,13 +53,13 @@ function createTrainingData(audioFilePath, markerFilePath) {
 					const allMarkers = positiveMarkers.concat(negativeMarkers);
 
 					const audioData = wavFile.channelData[0];
-					const outputPath = path.join(audioDir, path.basename(audioFilePath));
+					const outputFilePath = path.join(outputDir || audioDir, path.basename(audioFilePath));
 
 					const writer = new TrainingExWriter(audioData, allMarkers);
 
 					writer
 						.transform(Audio.reversePolarity)
-						.toFile(outputPath, sampleLengthOut, markerOffset);
+						.toFile(outputFilePath, sampleLengthOut, markerOffset);
 				});
 		})
 		.catch(err => console.error("ERROR", err));
