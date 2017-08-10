@@ -1,4 +1,6 @@
 const fs = require('fs');
+const path = require('path');
+const mkdirp = require('mkdirp');
 const TrainingDataHeader = require('./TrainingDataHeader');
 const { NUM_ARTICULATIONS } = require('../markers/midi-map.config');
 
@@ -16,6 +18,8 @@ class TrainingExWriter {
 	}
 
 	toFile(outputPathName, exampleLength, markerOffset = 0) {
+		const outputDir = path.dirname(outputPathName);
+		mkdirp.sync(outputDir);
 		const outputFilePath = `${outputPathName}.ndat`;
 		const numExamplesToBeWritten = this._exampleMarkers.length * this._transformers.length;
 

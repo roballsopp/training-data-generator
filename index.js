@@ -47,15 +47,20 @@ function createTrainingData(audioFilePath, markerFilePath) {
 		.then(wavFile => {
 			const audioDir = path.dirname(audioFilePath);
 			const midiMapFilePath = path.join(audioDir, 'map.js');
-			return Markers.fromFile(markerFilePath, midiMapFilePath, wavFile.sampleRate)
+			return Markers
+				.fromFile(markerFilePath, midiMapFilePath, wavFile.sampleRate)
 				.then(positiveMarkers => {
 					const negativeMarkers = Markers.generateNegativeMarkers(positiveMarkers, minNegativeExampleBuffer);
 					const allMarkers = positiveMarkers.concat(negativeMarkers);
 
 					const audioData = wavFile.channelData[0];
-					const outputFilePath = path.join(outputDir || audioDir, path.basename(audioFilePath));
 
 					const writer = new TrainingExWriter(audioData, allMarkers);
+
+					const cwdParentDir = path.join(process.cwd(), '..');
+					const relativeAudioDir = path.relative(cwdParentDir, audioDir);
+					const outputFolder = outputDir ? path.join(outputDir, relativeAudioDir) : audioDir;
+					const outputFilePath = path.join(outputFolder, path.basename(audioFilePath));
 
 					writer
 						.transform(Audio.reversePolarity)
