@@ -116,7 +116,7 @@ describe('Markers', function () {
 		});
 
 		it('sets all labels to 0 for each negative marker', function () {
-			const expectedLabels = new Uint8Array(NUM_ARTICULATIONS);
+			const expectedLabels = new Int8Array(NUM_ARTICULATIONS);
 
 			// almost certainly unnecessary, but i want to be dead sure they are 0
 			expectedLabels.forEach((label, i) => {
@@ -137,7 +137,7 @@ describe('Markers', function () {
 });
 
 function toOneHot(labels) {
-	const oneHotArray = new Uint8Array(NUM_ARTICULATIONS);
+	const oneHotArray = new Int8Array(NUM_ARTICULATIONS);
 	for (let i = 0, l = labels.length; i < l; i++) {
 		const classIndex = labels[i];
 		oneHotArray[classIndex] = 1;

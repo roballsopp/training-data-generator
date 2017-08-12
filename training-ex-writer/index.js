@@ -56,6 +56,8 @@ class TrainingExWriter {
 			numFeatures: exampleLength,
 			numLabels: NUM_ARTICULATIONS,
 			numExamples: numExamplesWritten,
+			featureFormat: TrainingDataHeader.FMT_FLOAT,
+			labelFormat: TrainingDataHeader.FMT_INT8,
 			labelOffset: markerOffset
 		});
 

@@ -44,7 +44,7 @@ function fromFile(markerPath, mapPath, sampleRate = 44100) {
 				if (evt.type === 'setTempo') currentSampPerBeat = (evt.microsecondsPerBeat / 1000000) * sampleRate;
 				else if (evt.type === 'noteOn') {
 					const markerPosition = Math.round(elapsedSamples);
-					markers[markerPosition] = markers[markerPosition] || new Uint8Array(NUM_ARTICULATIONS);
+					markers[markerPosition] = markers[markerPosition] || new Int8Array(NUM_ARTICULATIONS);
 					const mappedNote = midiMap[evt.noteNumber]; // map 128 possible midi notes into NUM_ARTICULATIONS
 					if (mappedNote !== ARTICULATIONS.NO_HIT) markers[markerPosition][mappedNote] = 1;
 				}
@@ -84,5 +84,5 @@ function createRandomBetween(firstMarker, secondMarker, minDistanceFromMarkers =
 	const distanceBetweenMarkers = secondMarker.pos - firstMarker.pos - (minDistanceFromMarkers * 2);
 	const pos = distanceBetweenMarkers > 0 ? (Math.random() * distanceBetweenMarkers) + firstMarker.pos : null;
 
-	return pos && { pos: Math.round(pos), y: new Uint8Array(NUM_ARTICULATIONS) };
+	return pos && { pos: Math.round(pos), y: new Int8Array(NUM_ARTICULATIONS) };
 }
