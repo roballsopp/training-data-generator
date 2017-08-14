@@ -5,14 +5,13 @@ const nodeWav = require('node-wav');
 const fsReadFile = Promise.promisify(fs.readFile);
 const Audio = require('../../audio');
 const Markers = require('../../markers');
-const TrainingExWriter = require('../index');
-const TrainingDataHeader = require('../TrainingDataHeader');
+const SingleTransientWriter = require('../SingleTransientWriter');
 const TrainingDataReader = require('../TrainingDataReader');
 
 const testMarkersPath = path.join(__dirname, '../../spec/markers.mid');
 const testWavFilePath = path.join(__dirname, '../../spec/test.wav');
 
-describe('Training Example Writer', function () {
+describe('Single Transient Writer', function () {
 	describe('toFile', function () {
 		beforeAll(function (done) {
 			this.expectedOutputPath = path.join(__dirname, '../../tmp/test');
@@ -37,7 +36,7 @@ describe('Training Example Writer', function () {
 				.then(([markers, audioData]) => {
 					this.markers = markers;
 					this.audioData = audioData;
-					const writer = new TrainingExWriter(audioData, markers);
+					const writer = new SingleTransientWriter(audioData, markers);
 					return writer
 						.transform(Audio.reversePolarity)
 						.toFile(this.expectedOutputPath, this.expectedExampleLength);

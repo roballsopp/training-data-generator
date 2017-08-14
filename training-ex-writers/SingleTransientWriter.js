@@ -4,7 +4,7 @@ const mkdirp = require('mkdirp');
 const TrainingDataHeader = require('./TrainingDataHeader');
 const { NUM_ARTICULATIONS } = require('../markers/midi-map.config');
 
-class TrainingExWriter {
+class SingleTransientWriter {
 	constructor(audioData, exampleMarkers) {
 		this._audioData = audioData;
 		this._exampleMarkers = exampleMarkers;
@@ -72,4 +72,4 @@ class TrainingExWriter {
 	}
 }
 
-module.exports = TrainingExWriter;
+module.exports = SingleTransientWriter;
