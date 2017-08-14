@@ -7,6 +7,7 @@ const Promise = require('bluebird');
 
 const config = require('./default.config');
 const SingleTransientDataGenerator = require('./single-trans');
+const AutoencoderDataGenerator = require('./autoencoder');
 
 let generator;
 
@@ -34,6 +35,23 @@ commander
 		console.info(`Output info - Length: ${sampleLengthOut} (${millisecondsOut} ms), Sample Rate: ${sampleRateOut}`);
 
 		generator = new SingleTransientDataGenerator({ outputDir, minNegativeExampleBuffer, sampleLengthOut, markerOffset });
+	});
+
+commander
+	.command('autoencoder')
+	.description('create training examples in which the number of features equals the number of labels')
+	.option('-l, --example-length [number]', 'Specify the length (sec) of each training example', 3)
+	.option('-e, --num-examples [number]', 'Specify the desired number of examples to extract from the audio', config.numExamples)
+	.action(function(options) {
+		const sampleRateOut = options.parent.sampleRate;
+		const lengthOut = options.exampleLength;
+		const sampleLengthOut = Math.round(sampleRateOut * lengthOut);
+		const desiredNumExamples = parseInt(options.numExamples);
+		const outputDir = options.parent.outputDir;
+
+		console.info(`Output info - Length: ${sampleLengthOut} (${lengthOut} sec), Sample Rate: ${sampleRateOut}`);
+
+		generator = new AutoencoderDataGenerator({ outputDir, lengthOut, desiredNumExamples });
 	});
 
 commander

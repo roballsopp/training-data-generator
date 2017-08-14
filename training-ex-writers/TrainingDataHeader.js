@@ -18,7 +18,7 @@ class TrainingDataHeader {
 	}
 
 	toBuffer() {
-		const buffer = Buffer.alloc(24);
+		const buffer = Buffer.alloc(TrainingDataHeader.HEADER_SIZE);
 		buffer.write(TrainingDataHeader.HEADER_ID, 0, 4);
 		buffer.writeUInt32LE(this.numFeatures, 4);
 		buffer.writeUInt16LE(this.featureFormat, 8);
@@ -37,8 +37,8 @@ class TrainingDataHeader {
 	static get FMT_INT8 () { return 4; }
 
 	static fromFile(fd) {
-		const buffer = Buffer.alloc(24);
-		fs.readSync(fd, buffer, 0, 24, 0);
+		const buffer = Buffer.alloc(TrainingDataHeader.HEADER_SIZE);
+		fs.readSync(fd, buffer, 0, TrainingDataHeader.HEADER_SIZE, 0);
 
 		const id = buffer.toString('utf8', 0, 4);
 
