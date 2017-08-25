@@ -16,6 +16,7 @@ commander
 	.option('-a, --audio [string]', 'Specify the path or glob to the audio file(s)', '/**/*.wav')
 	.option('-m, --markers [string]', 'Specify the path to the marker midi file', '/markers.mid')
 	.option('-o, --output-dir [string]', 'Specify the output directory for the data files')
+	// TODO: changing the sample rate is not supported, don't know why i made it seem like it is
 	.option('-r, --sample-rate [number]', 'Specify the sample rate of the training examples', config.sampleRateOut);
 
 commander
@@ -32,8 +33,6 @@ commander
 		const minNegativeExampleBuffer = options.exampleBuffer;
 		const outputDir = options.parent.outputDir;
 
-		console.info(`Output info - Length: ${sampleLengthOut} (${millisecondsOut} ms), Sample Rate: ${sampleRateOut}`);
-
 		generator = new SingleTransientDataGenerator({ outputDir, minNegativeExampleBuffer, sampleLengthOut, markerOffset });
 	});
 
@@ -43,13 +42,9 @@ commander
 	.option('-l, --example-length [number]', 'Specify the length (sec) of each training example', 3)
 	.option('-e, --num-examples [number]', 'Specify the desired number of examples to extract from the audio', config.numExamples)
 	.action(function(options) {
-		const sampleRateOut = options.parent.sampleRate;
 		const lengthOut = options.exampleLength;
-		const sampleLengthOut = Math.round(sampleRateOut * lengthOut);
 		const desiredNumExamples = parseInt(options.numExamples);
 		const outputDir = options.parent.outputDir;
-
-		console.info(`Output info - Length: ${sampleLengthOut} (${lengthOut} sec), Sample Rate: ${sampleRateOut}`);
 
 		generator = new AutoencoderDataGenerator({ outputDir, lengthOut, desiredNumExamples });
 	});

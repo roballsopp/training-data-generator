@@ -9,11 +9,10 @@ class AutoencoderDataGenerator {
 	constructor({
 								outputDir,
 								lengthOut = config.trainingExampleLength, // in seconds
-								sampleRateOut = config.sampleRateOut,
 								desiredNumExamples = 5000
 	}) {
 		this._outputDir = outputDir;
-		this._sampleLengthOut = Math.round(sampleRateOut * lengthOut);
+		this._lengthOut = lengthOut;
 		this._desiredNumExamples = desiredNumExamples;
 	}
 
@@ -23,11 +22,15 @@ class AutoencoderDataGenerator {
 			.then(wavFile => {
 				const audioDir = path.dirname(audioFilePath);
 				const midiMapFilePath = path.join(audioDir, 'map.js');
+				const sampleLengthOut = Math.round(wavFile.sampleRate * this._lengthOut);
+
+				console.info(`Output info - Length: ${sampleLengthOut} (${this._lengthOut}s), Sample Rate: ${wavFile.sampleRate}`);
+
 				return Markers
 					.fromFile(markerFilePath, midiMapFilePath, wavFile.sampleRate)
 					.then(markers => {
 						const audioData = wavFile.channelData[0];
-						const exampleBuilder = new AutoencoderExampleBuilder(audioData, markers, this._desiredNumExamples, this._sampleLengthOut);
+						const exampleBuilder = new AutoencoderExampleBuilder(audioData, markers, this._desiredNumExamples, sampleLengthOut);
 						const writer = new AutoencoderWriter(exampleBuilder);
 
 						const cwdParentDir = path.join(process.cwd(), '..');
