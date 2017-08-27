@@ -36,8 +36,7 @@ class SingleTransientDataGenerator {
 
 				const writer = new SingleTransientWriter(audioData, allMarkers);
 
-				const cwdParentDir = path.join(process.cwd(), '..');
-				const relativeAudioDir = path.relative(cwdParentDir, audioDir);
+				const relativeAudioDir = path.relative(process.cwd(), audioDir);
 				const outputFolder = this._outputDir ? path.join(this._outputDir, relativeAudioDir) : audioDir;
 				const outputFilePath = path.join(outputFolder, path.basename(audioFilePath));
 

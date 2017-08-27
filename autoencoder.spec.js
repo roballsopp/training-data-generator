@@ -9,25 +9,24 @@ const TrainingDataReader = require('./training-ex-writers/TrainingDataReader');
 const testMarkersPath = path.join(__dirname, './spec/markers.mid');
 const testMarkersWavPath = path.join(__dirname, './spec/markers.wav');
 const testWavFilePath = path.join(__dirname, './spec/test.wav');
+const outputDir = path.join(__dirname, './tmp/autoencoder-test');
+
+const expectedOutputPath = path.join(outputDir, './spec/test.wav.ndat');
+const expectedLengthOut = 3;
+const expectedSampleRateOut = 44100;
+const expectedExampleLength = expectedSampleRateOut * expectedLengthOut;
+const expectedNumExamples = 10;
 
 describe('AutoencoderDataGenerator', function () {
 	describe('createTrainingData', function () {
 		beforeAll(function (done) {
-			this.expectedOutputPath = testWavFilePath + '.ndat';
-			this.expectedLengthOut = 3;
-			this.expectedSampleRateOut = 44100;
-			this.expectedExampleLength = this.expectedSampleRateOut * this.expectedLengthOut;
-			this.expectedNumExamples = 10;
-
-			const outputDir = path.dirname(this.expectedOutputPath);
-
 			if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
-			if (fs.existsSync(this.expectedOutputPath)) fs.unlinkSync(this.expectedOutputPath);
+			if (fs.existsSync(expectedOutputPath)) fs.unlinkSync(expectedOutputPath);
 
 			const generator = new AutoencoderDataGenerator({
-				lengthOut: this.expectedLengthOut,
-				sampleRateOut: this.expectedSampleRateOut,
-				desiredNumExamples: this.expectedNumExamples
+				outputDir,
+				lengthOut: expectedLengthOut,
+				desiredNumExamples: expectedNumExamples
 			});
 
 			return generator
@@ -37,12 +36,12 @@ describe('AutoencoderDataGenerator', function () {
 		});
 
 		it('writes example data file to correct location', function () {
-			expect(fs.existsSync(this.expectedOutputPath)).toBeTruthy();
+			expect(fs.existsSync(expectedOutputPath)).toBeTruthy();
 		});
 
 		describe('data', function () {
 			beforeAll(function (done) {
-				buildExpectedExamples(testWavFilePath, testMarkersWavPath, this.expectedExampleLength, this.expectedNumExamples)
+				buildExpectedExamples(testWavFilePath, testMarkersWavPath, expectedExampleLength, expectedNumExamples)
 					.then(expectedExamples => {
 						this.expectedExamples = expectedExamples;
 					})
@@ -51,7 +50,7 @@ describe('AutoencoderDataGenerator', function () {
 			});
 
 			it(`writes raw feature set data correctly`, function () {
-				const { X: featureSets } = TrainingDataReader.fromFile(this.expectedOutputPath);
+				const { X: featureSets } = TrainingDataReader.fromFile(expectedOutputPath);
 
 				expect(featureSets.length).toBe(this.expectedExamples.length);
 				this.expectedExamples.forEach(({ X: expectedFeatureSet }, i) => {
@@ -60,7 +59,7 @@ describe('AutoencoderDataGenerator', function () {
 			});
 
 			it('writes label data correctly', function () {
-				const { y: labelSets } = TrainingDataReader.fromFile(this.expectedOutputPath);
+				const { y: labelSets } = TrainingDataReader.fromFile(expectedOutputPath);
 
 				expect(labelSets.length).toBe(this.expectedExamples.length);
 				this.expectedExamples.forEach(({ y: expectedLabelSet }, i) => {
