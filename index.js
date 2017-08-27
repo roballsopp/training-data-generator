@@ -40,13 +40,15 @@ commander
 	.command('autoencoder')
 	.description('create training examples in which the number of features equals the number of labels')
 	.option('-l, --example-length [number]', 'Specify the length (sec) of each training example', 3)
+	.option('-lr --label-ratio [number]', 'Specify the ratio of labels to features', 1.0)
 	.option('-e, --num-examples [number]', 'Specify the desired number of examples to extract from the audio', config.numExamples)
 	.action(function(options) {
 		const lengthOut = options.exampleLength;
 		const desiredNumExamples = parseInt(options.numExamples);
+		const labelRatio = parseFloat(options.labelRatio);
 		const outputDir = options.parent.outputDir;
 
-		generator = new AutoencoderDataGenerator({ outputDir, lengthOut, desiredNumExamples });
+		generator = new AutoencoderDataGenerator({ outputDir, lengthOut, labelRatio, desiredNumExamples });
 	});
 
 commander

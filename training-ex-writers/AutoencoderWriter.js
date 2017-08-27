@@ -13,15 +13,16 @@ class AutoencoderExWriter {
 		mkdirp.sync(outputDir);
 		const outputFilePath = `${outputPathName}.ndat`;
 		const numExamplesToBeWritten = this._exampleBuilder.numExamples;
-		const exampleLength = this._exampleBuilder.exampleLength;
+		const numFeatures = this._exampleBuilder.numFeatures;
+		const numLabels = this._exampleBuilder.numLabels;
 
-		console.info(`Writing ${numExamplesToBeWritten} training examples of feature length ${exampleLength} to ${outputFilePath}`);
+		console.info(`Writing ${numExamplesToBeWritten} training examples of feature length ${numFeatures}, and label length ${numLabels} to ${outputFilePath}`);
 
 		const fd = fs.openSync(outputFilePath, 'w');
 
 		const header = new TrainingDataHeader({
-			numFeatures: exampleLength,
-			numLabels: exampleLength,
+			numFeatures: numFeatures,
+			numLabels: numLabels,
 			numExamples: numExamplesToBeWritten,
 			featureFormat: TrainingDataHeader.FMT_FLOAT,
 			labelFormat: TrainingDataHeader.FMT_FLOAT,

@@ -7,12 +7,14 @@ const { AutoencoderExampleBuilder, AutoencoderWriter } = require('./training-ex-
 
 class AutoencoderDataGenerator {
 	constructor({
-								outputDir,
-								lengthOut = config.trainingExampleLength, // in seconds
-								desiredNumExamples = 5000
+		outputDir,
+		lengthOut = config.trainingExampleLength, // in seconds
+		labelRatio = 1.0, // how many labels to features to you want? 1 means the same number of labels as features, 0.5 means half, etc
+		desiredNumExamples = 5000
 	}) {
 		this._outputDir = outputDir;
 		this._lengthOut = lengthOut;
+		this._labelRatio = labelRatio;
 		this._desiredNumExamples = desiredNumExamples;
 	}
 
@@ -26,13 +28,12 @@ class AutoencoderDataGenerator {
 				Markers.fromFile(markerFilePath, midiMapFilePath)
 			])
 			.then(([wavFile, markers]) => {
-				const sampleLengthOut = Math.round(wavFile.sampleRate * this._lengthOut);
+				const numFeatures = Math.round(wavFile.sampleRate * this._lengthOut);
+				const numLabels = Math.round(numFeatures * this._labelRatio);
 
-				console.info(`Output info - Length: ${sampleLengthOut} (${this._lengthOut}s), Sample Rate: ${wavFile.sampleRate}`);
+				console.info(`Audio info - Sample Rate: ${wavFile.sampleRate}`);
 
-				const markersList = markers.getSamplePosList(wavFile.sampleRate);
-				const audioData = wavFile.channelData[0];
-				const exampleBuilder = new AutoencoderExampleBuilder(audioData, markersList, this._desiredNumExamples, sampleLengthOut);
+				const exampleBuilder = new AutoencoderExampleBuilder(wavFile, markers, this._desiredNumExamples, numFeatures, numLabels);
 				const writer = new AutoencoderWriter(exampleBuilder);
 
 				const relativeAudioDir = path.relative(process.cwd(), audioDir);

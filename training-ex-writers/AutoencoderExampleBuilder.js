@@ -29,16 +29,26 @@ function calcNumExamplesFromOffset(numFeatures, exampleOffset, availableSpace) {
 }
 
 class AutoencoderExampleBuilder {
-	constructor(audioBuffer, markers, desiredNumExamples, numFeatures) {
-		this._audioBuffer = audioBuffer;
-		this._labelBuffer = convertMarkersToLabelArray(markers, audioBuffer.length);
+	constructor(wavFile, markers, desiredNumExamples, numFeatures, numLabels = numFeatures) {
+		this._audioBuffer = wavFile.channelData[0];
+
+		// we might train the autoencoder to output a different number of labels than features for performance reasons
+		const labelFeatureRatio = numLabels / numFeatures;
+		// when we are calculating the positions of the markers, well need to use this ratio'd sample rate
+		const labelSampleRate = labelFeatureRatio * wavFile.sampleRate;
+		const labelBufferLength = Math.ceil(labelFeatureRatio * this._audioBuffer.length);
+		const markersList = markers.getSamplePosList(labelSampleRate);
+
+		this._labelBuffer = convertMarkersToLabelArray(markersList, labelBufferLength);
 		// number of samples to use for each training example
 		this._numFeatures = numFeatures;
-		this._exampleOffset = calcExampleOffset(numFeatures, desiredNumExamples, audioBuffer.length);
-		this._numExamples = calcNumExamplesFromOffset(numFeatures, this._exampleOffset, audioBuffer.length);
+		this._numLabels = numLabels;
+		this._featureSetOffset = calcExampleOffset(numFeatures, desiredNumExamples, this._audioBuffer.length);
+		this._labelSetOffset = this._featureSetOffset * labelFeatureRatio;
+		this._numExamples = calcNumExamplesFromOffset(numFeatures, this._featureSetOffset, this._audioBuffer.length);
 		this._currentExample = 0;
 
-		console.info(`Example overlap is ${numFeatures - this._exampleOffset}`);
+		console.info(`Example overlap is ${numFeatures - this._featureSetOffset}`);
 
 		this.hasNext = this.hasNext.bind(this);
 		this.getNextExample = this.getNextExample.bind(this);
@@ -49,20 +59,29 @@ class AutoencoderExampleBuilder {
 		return this._numExamples;
 	};
 
-	get exampleLength () {
+	get numFeatures () {
 		return this._numFeatures;
 	};
+
+	get numLabels () {
+		return this._numLabels;
+	}
 
 	hasNext () {
 		return this._currentExample < this._numExamples;
 	};
 
 	getNextExample () {
-		const startPos = this._currentExample * this._exampleOffset;
-		const endPos = startPos + this._numFeatures;
-		const features = this._audioBuffer.slice(startPos, endPos);
-		const labels = this._labelBuffer.slice(startPos, endPos);
+		const featureSetStartPos = this._currentExample * this._featureSetOffset;
+		const featureSetEndPos = featureSetStartPos + this._numFeatures;
+		const features = this._audioBuffer.slice(featureSetStartPos, featureSetEndPos);
+
+		const labelSetStartPos = this._currentExample * this._labelSetOffset;
+		const labelSetEndPos = labelSetStartPos + this._numLabels;
+		const labels = this._labelBuffer.slice(labelSetStartPos, labelSetEndPos);
+
 		this._currentExample++;
+
 		return [features, labels];
 	};
 
