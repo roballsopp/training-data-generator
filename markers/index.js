@@ -108,6 +108,7 @@ class Markers {
 			.sortBy('pos')
 			.value();
 
+		// Not exactly the number of midi events, since some happen simultaneously and are captured inside a single marker
 		console.info(`${markerArray.length} markers loaded.`);
 		return markerArray;
 	}
