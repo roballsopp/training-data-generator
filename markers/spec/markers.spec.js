@@ -20,14 +20,14 @@ describe('Markers', function () {
 
 		it('fails when the midi map has an invalid length', function (done) {
 			Markers
-				.fromFile(testMarkersPath, invalidLengthMap, 44100)
+				.fromFile(testMarkersPath, invalidLengthMap)
 				.then(() => done.fail('Expected a failure, but operation succeeded.'))
 				.catch(done);
 		});
 
 		it('fails when the midi map has an invalid type', function (done) {
 			Markers
-				.fromFile(testMarkersPath, invalidTypeMap, 44100)
+				.fromFile(testMarkersPath, invalidTypeMap)
 				.then(() => done.fail('Expected a failure, but operation succeeded.'))
 				.catch(done);
 		});
@@ -35,9 +35,9 @@ describe('Markers', function () {
 		describe('when using the default midi map', function () {
 			beforeAll(function (done) {
 				Markers
-					.fromFile(testMarkersPath, null, 44100)
+					.fromFile(testMarkersPath)
 					.then(markers => {
-						this.actualMarkers = markers;
+						this.actualMarkers = markers.getSamplePosList(44100);
 					})
 					.then(done)
 					.catch(done.fail);
@@ -61,9 +61,9 @@ describe('Markers', function () {
 		describe('when using a custom midi map', function () {
 			beforeAll(function (done) {
 				Markers
-					.fromFile(testMarkersPath, testMapPath, 44100)
+					.fromFile(testMarkersPath, testMapPath)
 					.then(markers => {
-						this.actualMarkers = markers;
+						this.actualMarkers = markers.getSamplePosList(44100);
 					})
 					.then(done)
 					.catch(done.fail);
@@ -90,9 +90,9 @@ describe('Markers', function () {
 			this.expectedMinDistanceFromPositiveMarkers = 50;
 			Markers
 				.fromFile(testMarkersPath)
-				.then(positiveMarkers => {
-					this.expectedPositiveMarkers = positiveMarkers;
-					return Markers.generateNegativeMarkers(positiveMarkers, this.expectedMinDistanceFromPositiveMarkers);
+				.then(markers => {
+					this.expectedPositiveMarkers = markers.getSamplePosList(44100);
+					return Markers.generateNegativeMarkers(this.expectedPositiveMarkers, this.expectedMinDistanceFromPositiveMarkers);
 				})
 				.then(negativeMarkers => {
 					this.actualNegativeMarkers = negativeMarkers;

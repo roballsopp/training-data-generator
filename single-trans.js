@@ -19,30 +19,31 @@ class SingleTransientDataGenerator {
 	}
 
 	createTrainingData(audioFilePath, markerFilePath) {
-		return Audio
-			.load(audioFilePath)
-			.then(wavFile => {
-				const audioDir = path.dirname(audioFilePath);
-				const midiMapFilePath = path.join(audioDir, 'map.js');
-				return Markers
-					.fromFile(markerFilePath, midiMapFilePath, wavFile.sampleRate)
-					.then(positiveMarkers => {
-						const negativeMarkers = Markers.generateNegativeMarkers(positiveMarkers, this._minNegativeExampleBuffer);
-						const allMarkers = positiveMarkers.concat(negativeMarkers);
+		const audioDir = path.dirname(audioFilePath);
+		const midiMapFilePath = path.join(audioDir, 'map.js');
 
-						const audioData = wavFile.channelData[0];
+		return Promise
+			.all([
+				Audio.load(audioFilePath),
+				Markers.fromFile(markerFilePath, midiMapFilePath)
+			])
+			.then(([wavFile, markers]) => {
+				const positiveMarkers = markers.getSamplePosList(wavFile.sampleRate);
+				const negativeMarkers = Markers.generateNegativeMarkers(positiveMarkers, this._minNegativeExampleBuffer);
+				const allMarkers = positiveMarkers.concat(negativeMarkers);
 
-						const writer = new SingleTransientWriter(audioData, allMarkers);
+				const audioData = wavFile.channelData[0];
 
-						const cwdParentDir = path.join(process.cwd(), '..');
-						const relativeAudioDir = path.relative(cwdParentDir, audioDir);
-						const outputFolder = this._outputDir ? path.join(this._outputDir, relativeAudioDir) : audioDir;
-						const outputFilePath = path.join(outputFolder, path.basename(audioFilePath));
+				const writer = new SingleTransientWriter(audioData, allMarkers);
 
-						writer
-							.transform(Audio.reversePolarity)
-							.toFile(outputFilePath, this._sampleLengthOut, this._markerOffset);
-					});
+				const cwdParentDir = path.join(process.cwd(), '..');
+				const relativeAudioDir = path.relative(cwdParentDir, audioDir);
+				const outputFolder = this._outputDir ? path.join(this._outputDir, relativeAudioDir) : audioDir;
+				const outputFilePath = path.join(outputFolder, path.basename(audioFilePath));
+
+				return writer
+					.transform(Audio.reversePolarity)
+					.toFile(outputFilePath, this._sampleLengthOut, this._markerOffset);
 			});
 	}
 }

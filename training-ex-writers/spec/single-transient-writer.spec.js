@@ -24,19 +24,16 @@ describe('Single Transient Writer', function () {
 			if (!fs.existsSync(outputDir))fs.mkdirSync(outputDir);
 			if (fs.existsSync(this.expectedExampleFilePath)) fs.unlinkSync(this.expectedExampleFilePath);
 
-			fsReadFile(testWavFilePath)
-				.then(nodeWav.decode)
-				.then(waveFile => {
-					return Promise
-						.all([
-							Markers.fromFile(testMarkersPath, null, waveFile.sampleRate),
-							waveFile.channelData[0]
-						]);
-				})
-				.then(([markers, audioData]) => {
-					this.markers = markers;
-					this.audioData = audioData;
-					const writer = new SingleTransientWriter(audioData, markers);
+			Promise
+				.all([
+					fsReadFile(testWavFilePath),
+					Markers.fromFile(testMarkersPath, null)
+				])
+				.then(([waveFileBlob, markers]) => {
+					const waveFile = nodeWav.decode(waveFileBlob);
+					this.markers = markers.getSamplePosList(waveFile.sampleRate);
+					this.audioData = waveFile.channelData[0];
+					const writer = new SingleTransientWriter(this.audioData, this.markers);
 					return writer
 						.transform(Audio.reversePolarity)
 						.toFile(this.expectedOutputPath, this.expectedExampleLength);
