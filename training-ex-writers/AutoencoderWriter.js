@@ -26,7 +26,7 @@ class AutoencoderExWriter {
 			numExamples: numExamplesToBeWritten,
 			featureFormat: TrainingDataHeader.FMT_FLOAT,
 			labelFormat: TrainingDataHeader.FMT_FLOAT,
-			labelOffset: 0
+			labelOffset: this._exampleBuilder.labelOffset
 		});
 
 		const headerBuf = header.toBuffer();
