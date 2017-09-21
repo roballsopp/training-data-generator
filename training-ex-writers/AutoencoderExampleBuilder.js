@@ -29,8 +29,11 @@ function calcNumExamplesFromOffset(numFeatures, exampleOffset, availableSpace) {
 }
 
 class AutoencoderExampleBuilder {
-	constructor(wavFile, markers, desiredNumExamples, numFeatures, numLabels = numFeatures) {
-		this._audioBuffer = wavFile.channelData[0];
+	constructor(wavFile, markers, desiredNumExamples, numFeatures, numLabels = numFeatures, markerOffset) {
+		const audioBuffer = wavFile.channelData[0];
+		this._audioBuffer = new Float32Array(audioBuffer.length + markerOffset);
+		// delay the audio by some amount so the markers are early
+		this._audioBuffer.set(audioBuffer, markerOffset);
 
 		// we might train the autoencoder to output a different number of labels than features for performance reasons
 		const labelFeatureRatio = numLabels / numFeatures;
@@ -46,6 +49,7 @@ class AutoencoderExampleBuilder {
 		this._featureSetOffset = calcExampleOffset(numFeatures, desiredNumExamples, this._audioBuffer.length);
 		this._labelSetOffset = this._featureSetOffset * labelFeatureRatio;
 		this._numExamples = calcNumExamplesFromOffset(numFeatures, this._featureSetOffset, this._audioBuffer.length);
+		this._labelOffset = markerOffset;
 		this._currentExample = 0;
 
 		console.info(`Example overlap is ${numFeatures - this._featureSetOffset}`);
@@ -65,6 +69,10 @@ class AutoencoderExampleBuilder {
 
 	get numLabels () {
 		return this._numLabels;
+	}
+
+	get labelOffset () {
+		return this._labelOffset;
 	}
 
 	hasNext () {

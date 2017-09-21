@@ -10,12 +10,14 @@ class AutoencoderDataGenerator {
 		outputDir,
 		numFeatures = config.trainingExampleLength, // in samples
 		numLabels = numFeatures,
-		desiredNumExamples = 5000
+		desiredNumExamples = 5000,
+		markerOffset = 0,
 	}) {
 		this._outputDir = outputDir;
 		this._numFeatures = numFeatures;
 		this._numLabels = numLabels;
 		this._desiredNumExamples = desiredNumExamples;
+		this._markerOffset = markerOffset;
 	}
 
 	createTrainingData(audioFilePath, markerFilePath) {
@@ -30,7 +32,7 @@ class AutoencoderDataGenerator {
 			.then(([wavFile, markers]) => {
 				console.info(`Audio info - Sample Rate: ${wavFile.sampleRate}`);
 
-				const exampleBuilder = new AutoencoderExampleBuilder(wavFile, markers, this._desiredNumExamples, this._numFeatures, this._numLabels);
+				const exampleBuilder = new AutoencoderExampleBuilder(wavFile, markers, this._desiredNumExamples, this._numFeatures, this._numLabels, this._markerOffset);
 				const writer = new AutoencoderWriter(exampleBuilder);
 
 				const relativeAudioDir = path.relative(process.cwd(), audioDir);
