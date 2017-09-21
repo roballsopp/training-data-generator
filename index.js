@@ -39,16 +39,16 @@ commander
 commander
 	.command('autoencoder')
 	.description('create training examples in which the number of features equals the number of labels')
-	.option('-l, --example-length [number]', 'Specify the length (sec) of each training example', 3)
-	.option('-lr --label-ratio [number]', 'Specify the ratio of labels to features', 1.0)
+	.option('--num-features [number]', 'Specify the length (samples) of each feature set', 1024)
+	.option('--num-labels [number]', 'Specify the length of each label set', 1024)
 	.option('-e, --num-examples [number]', 'Specify the desired number of examples to extract from the audio', config.numExamples)
 	.action(function(options) {
-		const lengthOut = options.exampleLength;
+		const numFeatures = parseInt(options.numFeatures);
+		const numLabels = parseInt(options.numLabels);
 		const desiredNumExamples = parseInt(options.numExamples);
-		const labelRatio = parseFloat(options.labelRatio);
 		const outputDir = options.parent.outputDir;
 
-		generator = new AutoencoderDataGenerator({ outputDir, lengthOut, labelRatio, desiredNumExamples });
+		generator = new AutoencoderDataGenerator({ outputDir, numFeatures, numLabels, desiredNumExamples });
 	});
 
 commander
