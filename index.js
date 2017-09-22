@@ -41,16 +41,18 @@ commander
 	.description('create training examples in which the number of features equals the number of labels')
 	.option('--num-features [number]', 'Specify the length (samples) of each feature set', 1024)
 	.option('--num-labels [number]', 'Specify the length of each label set', 1024)
-	.option('-e, --num-examples [number]', 'Specify the desired number of examples to extract from the audio', config.numExamples)
+	.option('--late-marker-window [number]', 'Specify how much of the end of each label set to zero out', 0)
+	.option('--num-examples [number]', 'Specify the desired number of examples to extract from the audio', config.numExamples)
 	.action(function(options) {
 		const numFeatures = parseInt(options.numFeatures);
 		const numLabels = parseInt(options.numLabels);
 		const desiredNumExamples = parseInt(options.numExamples);
 		// how far forward in time to pad the audio signal, to effectively make the markers mark earlier than the actual transients
 		const markerOffset = parseInt(options.parent.offset);
+		const lateMarkerWindow = parseInt(options.lateMarkerWindow);
 		const outputDir = options.parent.outputDir;
 
-		generator = new AutoencoderDataGenerator({ outputDir, numFeatures, numLabels, desiredNumExamples, markerOffset });
+		generator = new AutoencoderDataGenerator({ outputDir, numFeatures, numLabels, desiredNumExamples, markerOffset, lateMarkerWindow });
 	});
 
 commander

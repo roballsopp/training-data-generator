@@ -29,7 +29,10 @@ function calcNumExamplesFromOffset(numFeatures, exampleOffset, availableSpace) {
 }
 
 class AutoencoderExampleBuilder {
-	constructor(wavFile, markers, desiredNumExamples, numFeatures, numLabels = numFeatures, markerOffset) {
+	// lateMarkerWindow is how many samples from the end of an example we will remove markers
+	// if a marker occurs very close to the end of an example, there may not be enough data
+	// for the neural net to actually learn anything from
+	constructor(wavFile, markers, desiredNumExamples, numFeatures, numLabels = numFeatures, markerOffset = 0, lateMarkerWindow = 0) {
 		const audioBuffer = wavFile.channelData[0];
 		this._audioBuffer = new Float32Array(audioBuffer.length + markerOffset);
 		// delay the audio by some amount so the markers are early
@@ -50,6 +53,7 @@ class AutoencoderExampleBuilder {
 		this._labelSetOffset = this._featureSetOffset * labelFeatureRatio;
 		this._numExamples = calcNumExamplesFromOffset(numFeatures, this._featureSetOffset, this._audioBuffer.length);
 		this._labelOffset = markerOffset;
+		this._lateMarkerWindow = lateMarkerWindow;
 		this._currentExample = 0;
 
 		console.info(`Example overlap is ${numFeatures - this._featureSetOffset}`);
@@ -86,7 +90,10 @@ class AutoencoderExampleBuilder {
 
 		const labelSetStartPos = this._currentExample * this._labelSetOffset;
 		const labelSetEndPos = labelSetStartPos + this._numLabels;
-		const labels = this._labelBuffer.slice(labelSetStartPos, labelSetEndPos);
+		let labels = this._labelBuffer.slice(labelSetStartPos, labelSetEndPos);
+
+		// if lateMarkerWindow is not 0, get rid of that many samples of labels at the end of the example
+		if (this._lateMarkerWindow) labels = labels.fill(0, -this._lateMarkerWindow);
 
 		this._currentExample++;
 
